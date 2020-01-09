@@ -1,4 +1,4 @@
-function [data, stats] = translateAndCalculate(path, noTranslations, logMode)
+function [data, stats, recognized] = translateAndCalculate(classifier, path, noTranslations, logMode)
     tic;
     
     if (logMode >= 2)
@@ -6,6 +6,7 @@ function [data, stats] = translateAndCalculate(path, noTranslations, logMode)
     end
     
     warning('off', 'images:imfindcircles:warnForLargeRadiusRange');
+%     warning('off', 'images:imfindcircles:warnForSmallRadius');
     img = imread(path);
     [xSiz, ySiz, colCh] = size(img);
     if colCh > 1
@@ -39,7 +40,8 @@ function [data, stats] = translateAndCalculate(path, noTranslations, logMode)
 
                 img1 = imtranslate(img, [i*xShift, j*yShift]);
                 [data(ind).rXY, data(ind).rR, data(ind).chXY, data(ind).chR, data(ind).sQ, data(ind).sXY, data(ind).sR, data(ind).scXY, data(ind).vXY, data(ind).vR, data(ind).aRad, data(ind).aDeg, data(ind).centr] = calcParams(img1, rR);
-
+                recognized(ind) = rec(classifier, img);
+                
                 ind = ind + 1;
             end
         end
@@ -48,6 +50,7 @@ function [data, stats] = translateAndCalculate(path, noTranslations, logMode)
             disp("1 of 1")
         end
         [data(1).rXY, data(1).rR, data(1).chXY, data(1).chR, data(1).sQ, data(1).sXY, data(1).sR, data(1).scXY, data(1).vXY, data(1).vR, data(1).aRad, data(1).aDeg, data(1).centr] = calcParams(img, rR);
+        recognized(1) = rec(classifier, img);
     end
     
     if (logMode >= 2)

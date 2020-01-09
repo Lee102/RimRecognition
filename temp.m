@@ -1,24 +1,26 @@
 clear
 clc
-ind = 1;
 
-for i = 4 : 4
+disp("Calculating classifier")
+classifier = recTrainer("Rims/RimsRec/Raw");
+
+for i = 0 : 1
     disp("noTranslations: " + i)
     disp("===============================================================")
     for j = 0 : 9
         path = "Rims/" + j + ".png";
         disp("path: " + path)
-        result(ind).noTranslations = i;
-        result(ind).rim = j;
+        result(i+1, j+1).noTranslations = i;
+        result(i+1, j+1).rim = j;
         try
-            [data, stat] = translateAndCalculate(path,i,2);
-            result(ind).data = data;
-            result(ind).stat = stat;
-            result(ind).err = "";
+            [data, stat, recognized] = translateAndCalculate(classifier, path, i, 2);
+            result(i+1, j+1).data = data;
+            result(i+1, j+1).stat = stat;
+            result(i+1, j+1).recognized = recognized;
+            result(i+1, j+1).err = "";
         catch x
-            result(ind).err = x;
+            result(i+1, j+1).err = x;
         end
-        ind = ind + 1;
         disp("-----------------------------------------------------------")
     end
     disp("===============================================================")

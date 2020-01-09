@@ -8,7 +8,7 @@ function [rXY, rR, chXY, chR, sQ, sXY, sR, scXY, vXY, vR, aRad, aDeg, centr] = c
     img = cutRim(img, rXY, rR);
     
     [chXY, chR] = imfindcircles(img, [30, 45], 'ObjectPolarity', 'dark', 'Sensitivity', 0.9);
-    [ohXY, ohR] = imfindcircles(img, [10, 22], 'ObjectPolarity', 'bright', 'Sensitivity', 0.895);
+    [ohXY, ohR] = imfindcircles(img, [10, 22], 'ObjectPolarity', 'bright', 'Sensitivity', 0.896);
     [ihXY, ihR] = imfindcircles(img, [6, 13], 'ObjectPolarity', 'dark', 'Sensitivity', 0.87, 'Method', 'twostage');
     
     hR = [];
@@ -54,11 +54,11 @@ function [rXY, rR, chXY, chR, sQ, sXY, sR, scXY, vXY, vR, aRad, aDeg, centr] = c
     else
         ind = 1;
     end
-
+    
     oSs = sqrt((chXY(1) - s(ind,1)) ^ 2 + (chXY(2) - s(ind,2)) ^ 2);
     oSw = sqrt((chXY(1) - vXY(1)) ^ 2 + (chXY(2) - vXY(2)) ^ 2);
     osw = sqrt((s(ind,1) - vXY(1)) ^ 2 + (s(ind,2) - vXY(2)) ^ 2);
-
+    
     aRad = acos((oSs ^ 2 + oSw ^ 2 - osw ^ 2) / (2 * oSs * oSw));
     aDeg = aRad * 180 / pi;
     
