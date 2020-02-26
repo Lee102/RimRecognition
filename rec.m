@@ -1,6 +1,11 @@
-function recognizedLabel = rec(classifier, img)
-    cellSize = [55 55];
-    numBins = 25;
+function recognizedLabel = rec(classifier, img, cellSize, numBins)
+% output:
+    % recognizedLabel - label of recognized image
+% input:
+    % classifier - hog classifier
+    % img - image to recognize
+    % cellSize - extractHOGFeatures cellSize
+    % numBins - extractHOGFeatures numBins
     
     features = extractHOGFeatures(img, 'CellSize', cellSize, 'NumBins', numBins);
     

@@ -1,13 +1,27 @@
-function [data, stats, recognized] = translateAndCalculate(classifier, path, noTranslations, logMode)
+function [data, stats, recognized] = translateAndCalculate(classifier, img, noTranslations, logMode, rimImfindcirclesBounds, centralHoleImfindcirclesBounds, outerHolesImfindcirclesBounds, innerHolesImfindcirclesBounds, cellSize, numBins, cutRimSize)
+% output:
+    % data - rim params
+    % stats - rim statistics - min, max, mean, median, mode, var, std,
+    %       noTranslations, time
+    % recognized - recognized lables (for each translated image)
+% input:
+    % classifier - hog classifier
+    % path - image path
+    % noTranslations - numer of translation (per one direction)
+    % logMode - logger detail level: 0 - none, 1 - basic, 2 - all
+    % rimImfindcirclesBounds - bounds for rim imfindcircles
+    % centralHoleImfindcirclesBounds - bounds for central hole imfindcircles
+    % outerHolesImfindcirclesBounds - bounds for inner holes imfindcircles
+    % innerHolesImfindcirclesBounds - bounds for outer holes imfindcircles
+    % cellSize - extractHOGFeatures cellSize
+    % numBins - extractHOGFeatures numBins
     tic;
     
     if (logMode >= 2)
         disp("Opening image...")
     end
     
-    warning('off', 'images:imfindcircles:warnForLargeRadiusRange');
-%     warning('off', 'images:imfindcircles:warnForSmallRadius');
-    img = imread(path);
+%     img = imread(path);
     [xSiz, ySiz, colCh] = size(img);
     if colCh > 1
         img = rgb2gray(img);
@@ -39,8 +53,8 @@ function [data, stats, recognized] = translateAndCalculate(classifier, path, noT
                 end
 
                 img1 = imtranslate(img, [i*xShift, j*yShift]);
-                [data(ind).rXY, data(ind).rR, data(ind).chXY, data(ind).chR, data(ind).sQ, data(ind).sXY, data(ind).sR, data(ind).scXY, data(ind).vXY, data(ind).vR, data(ind).aRad, data(ind).aDeg, data(ind).centr] = calcParams(img1, rR);
-                recognized(ind) = rec(classifier, img);
+                [data(ind).rXY, data(ind).rR, data(ind).chXY, data(ind).chR, data(ind).sQ, data(ind).sXY, data(ind).sR, data(ind).scXY, data(ind).vXY, data(ind).vR, data(ind).aRad, data(ind).aDeg, data(ind).centr] = calcParams(img1, rimImfindcirclesBounds, centralHoleImfindcirclesBounds, outerHolesImfindcirclesBounds, innerHolesImfindcirclesBounds, rR, cutRimSize);
+                recognized(ind) = rec(classifier, img1, cellSize, numBins);
                 
                 ind = ind + 1;
             end
@@ -49,8 +63,8 @@ function [data, stats, recognized] = translateAndCalculate(classifier, path, noT
         if (logMode >=1)
             disp("1 of 1")
         end
-        [data(1).rXY, data(1).rR, data(1).chXY, data(1).chR, data(1).sQ, data(1).sXY, data(1).sR, data(1).scXY, data(1).vXY, data(1).vR, data(1).aRad, data(1).aDeg, data(1).centr] = calcParams(img, rR);
-        recognized(1) = rec(classifier, img);
+        [data(1).rXY, data(1).rR, data(1).chXY, data(1).chR, data(1).sQ, data(1).sXY, data(1).sR, data(1).scXY, data(1).vXY, data(1).vR, data(1).aRad, data(1).aDeg, data(1).centr] = calcParams(img, rimImfindcirclesBounds, centralHoleImfindcirclesBounds, outerHolesImfindcirclesBounds, innerHolesImfindcirclesBounds, rR, cutRimSize);
+        recognized(1) = rec(classifier, img, cellSize, numBins);
     end
     
     if (logMode >= 2)

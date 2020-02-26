@@ -1,15 +1,36 @@
-function [rXY, rR, chXY, chR, sQ, sXY, sR, scXY, vXY, vR, aRad, aDeg, centr] = calcParams(img,rR)
+function [rXY, rR, chXY, chR, sQ, sXY, sR, scXY, vXY, vR, aRad, aDeg, centr] = calcParams(img, rimImfindcirclesBounds, centralHoleImfindcirclesBounds, outerHolesImfindcirclesBounds, innerHolesImfindcirclesBounds, rR, cutRimSize)
+% output:
+    % rXY - rim midpoint coordinates
+    % rR - rim radius
+    % chXY - central hole midpoint coordinates
+    % chR - central hole radius
+    % sQ - screws quantity
+    % sXY - screws midpoints coordinates
+    % sR - screws radiuses
+    % scXY - calculated central hole midpoint coordinates (scXY mean)
+    % vXY - ventil midpoint coordinates
+    % vR - ventil radius
+    % aRad - ventil to next screw radians
+    % aDeg - ventil to next screw degrees
+    % centr - difference between chXY and scXY
+% input:
+    % img - image
+    % rimImfindcirclesBounds - bounds for rim imfindcircles
+    % centralHoleImfindcirclesBounds - bounds for central hole imfindcircles
+    % outerHolesImfindcirclesBounds - bounds for inner holes imfindcircles
+    % innerHolesImfindcirclesBounds - bounds for outer holes imfindcircles
+    % rR - nullable rim radius
     if exist('rR','var')
         [rXY, rR] = imfindcircles(img, [rR-5, rR+5], 'ObjectPolarity', 'bright', 'Sensitivity', 0.96, 'Method', 'twostage');
     else
-        [rXY, rR] = imfindcircles(img, [250, 450], 'ObjectPolarity', 'bright', 'Sensitivity', 0.96, 'Method', 'twostage');
+        [rXY, rR] = imfindcircles(img, rimImfindcirclesBounds, 'ObjectPolarity', 'bright', 'Sensitivity', 0.96, 'Method', 'twostage');
     end
     
-    img = cutRim(img, rXY, rR);
+    img = cutRim(img, rXY, rR, cutRimSize);
     
-    [chXY, chR] = imfindcircles(img, [30, 45], 'ObjectPolarity', 'dark', 'Sensitivity', 0.9);
-    [ohXY, ohR] = imfindcircles(img, [10, 22], 'ObjectPolarity', 'bright', 'Sensitivity', 0.896);
-    [ihXY, ihR] = imfindcircles(img, [6, 13], 'ObjectPolarity', 'dark', 'Sensitivity', 0.87, 'Method', 'twostage');
+    [chXY, chR] = imfindcircles(img, centralHoleImfindcirclesBounds, 'ObjectPolarity', 'dark', 'Sensitivity', 0.9);
+    [ohXY, ohR] = imfindcircles(img, outerHolesImfindcirclesBounds, 'ObjectPolarity', 'bright', 'Sensitivity', 0.896);
+    [ihXY, ihR] = imfindcircles(img, innerHolesImfindcirclesBounds, 'ObjectPolarity', 'dark', 'Sensitivity', 0.87, 'Method', 'twostage');
     
     hR = [];
     ind = 1;

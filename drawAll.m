@@ -1,3 +1,4 @@
+% temporary
 clear
 clc
 warning('off', 'images:imfindcircles:warnForLargeRadiusRange');
@@ -5,7 +6,7 @@ img = imread("Rims/0.png");
 
 [rXY, rR, chXY, chR, sQ, sXY, sR, scXY, vXY, vR, aRad, aDeg, centr] = calcParams(img);
 
-img = cutRim(img, rXY, rR);
+img = cutRim(img, rXY, rR, 1200);
 imshow(img)
 hold on;
 
