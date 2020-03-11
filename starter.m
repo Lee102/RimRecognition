@@ -14,7 +14,7 @@ centralHoleImfindcirclesBounds = [30, 45];
 outerHolesImfindcirclesBounds = [10, 22];
 innerHolesImfindcirclesBounds = [6, 13];
 % hog
-hogTrainSetPath = "Rims/RimsRec/Raw";
+hogTrainSetPath = "Rec";
 cellSize = [55 55];
 numBins = 25;
 % cutRim
