@@ -3,133 +3,102 @@ clc
 addpath('Scripts')
 
 % start params
-testSetPath = "Rims";
+imagePath = "Rims/6.png";
 logMode = 2;
-maxNoTranslations = 1;
+maxNoTranslations = 0;
 % camera calibration
 calibrationSetPath = "Cal";
 squareSize = 25;
-% hog
+% hog classifier
 hogTrainSetPath = "Hog";
+% params classifier
+paramsTrainSetPath = "Hog";
 
 warning('off', 'images:imfindcircles:warnForLargeRadiusRange');
 warning('off', 'images:imfindcircles:warnForSmallRadius');
 
-% camera calibration and hog classificator build
+% camera calibration and classificators builds
 disp("Camera calibration");
-tic;
-[cameraParams, rotation, translation] = calibrateCamera(calibrationSetPath, squareSize);
-cameraCalibrationTime = toc;
+[cameraParams, cameraRotation, cameraTranslation, cameraCalibrationTime] = calibrateCamera(calibrationSetPath, squareSize);
 if (logMode >= 2)
-    disp("Camera calibration done within " + cameraCalibrationTime + " s.");
+    disp("Camera calibration done within " + cameraCalibrationTime + " s.")
 end
-disp("Classifier build")
-tic;
-classifier = buildHogClassifier(hogTrainSetPath);
-classifierBuildTime = toc;
+disp("Hog classifier build")
+[hogClassifier, hogClassifierBuildTime] = buildHogClassifier(hogTrainSetPath);
 if (logMode >= 2)
-    disp("Classifier builded within " + cameraCalibrationTime + " s.");
+    disp("Hog classifier builded within " + hogClassifierBuildTime + " s.")
+end
+disp("Params classifier build")
+[paramsClassifier, paramsClassifierBuildTime] = buildParamsClassifier(paramsTrainSetPath);
+if (logMode >= 2)
+    disp("Params classifier builded within " + paramsClassifierBuildTime + " s.")
 end
 disp("===============================================================")
 
-disp("Rims calculations")
-testSet = imageDatastore(testSetPath);
-for i = 1 : numel(testSet.Files)
-    imgName = char(extractAfter(testSet.Files(i), testSetPath+"\"));
-    if (logMode >= 1)
-        disp("Calculated image: " + imgName)
-    end
-    result(i).path = imgName;
-    for j = 1 : (maxNoTranslations+1)
-        if (logMode >= 2)
-            disp("Translations: " + (j-1));
-        end
-        try
-            tacData = translateAndCalculateRim(classifier, readimage(testSet, i), j-1, logMode);
-            tacData.err = "";
-            result(i).tac(j) = tacData;
-        catch x
-            result(i).tac(j).err = x;
-        end
-        if (logMode >= 2 && j < (maxNoTranslations+1))
-            disp("-----------------------------------------------------------")
-        end
-    end
-    if (logMode >= 2)
-        disp("===============================================================")
-    end
+disp("Rim calculations")
+img = imread(imagePath);
+[~, ~, colCh] = size(img);
+if colCh > 1
+    img = rgb2gray(img);
 end
+
+result.data = calculateRimParameters(img);
+disp("Rim params calculated within " + result.data.tim + " s:")
+
+disp("Rim:")
+disp("  xy: [" + result.data.rXY(1) + " " + result.data.rXY(2) + "]")
+disp("  diameter: " + result.data.rD + " px")
+disp("Central hole:")
+disp("  xy: [" + result.data.chXY(1) + " " + result.data.chXY(2) + "]")
+disp("  diameter: " + result.data.chD + " px")
+disp("  centricity vector: [" + result.data.chC(1) + " " + result.data.chC(2) + "]")
+disp("Screw holes:")
+disp("  quantity: " + result.data.sQ)
+disp("  xy:")
+for i = 1 : result.data.sQ
+    disp("    [" + result.data.sXY(1) + " " + result.data.sXY(2) + "]")
+end
+disp("  diameters:")
+for i = 1 : result.data.sQ
+    disp("    " + result.data.sD(i) + " px")
+end
+if ~result.data.sDC
+    disp("    Screws was not detected correctly!")
+end
+disp("Pitch circle:")
+disp("  diameter: " + result.data.pcD + " px")
+disp("  centricity vector: [" + result.data.pcC(1) + " " + result.data.pcC(2) + "]")
+disp("Ventil hole:")
+disp("  xy: [" + result.data.vXY(1) + " " + result.data.vXY(2) + "]")
+disp("  diameter: " + result.data.vD + " px")
+disp("  angle: " + result.data.vA + " deg")
 
 disp("===============================================================")
-disp("Calculating world sizes")
-tic;
-for i = 1 : numel(testSet.Files)
-    for j = 1 : (maxNoTranslations + 1)
-        for k = 1 : length(result(i).tac(j).data)
-            result(i).tac(j).data(k).rDW = calculateWorldDistance(cameraParams, rotation, translation, result(i).tac(j).data(k).rXY, [result(i).tac(j).data(k).rXY(1) + result(i).tac(j).data(k).rD, result(i).tac(j).data(k).rXY(2)]);
-            result(i).tac(j).data(k).chDW = calculateWorldDistance(cameraParams, rotation, translation, result(i).tac(j).data(k).chXY, [result(i).tac(j).data(k).chXY(1) + result(i).tac(j).data(k).chD, result(i).tac(j).data(k).chXY(2)]);
-            for l = 1 : result(i).tac(j).data(k).sQ
-                result(i).tac(j).data(k).sDW(l) = calculateWorldDistance(cameraParams, rotation, translation, result(i).tac(j).data(k).sXY(l,:), [result(i).tac(j).data(k).sXY(l,1) + result(i).tac(j).data(k).sD(l), result(i).tac(j).data(k).sXY(l,2)]);
-            end
-            result(i).tac(j).data(k).vDW = calculateWorldDistance(cameraParams, rotation, translation, result(i).tac(j).data(k).vXY, [result(i).tac(j).data(k).vXY(1) + result(i).tac(j).data(k).vD, result(i).tac(j).data(k).vXY(2)]);
-            result(i).tac(j).data(k).sCDW = calculateWorldDistance(cameraParams, rotation, translation, [0 0], [result(i).tac(j).data(k).sCD, 0]);
-        end
-    end
+disp("Calculating real sizes")
+result.data.rDW = calculateWorldDistance(cameraParams, cameraRotation, cameraTranslation, result.data.rXY, [result.data.rXY(1) + result.data.rD, result.data.rXY(2)]);
+result.data.chDW = calculateWorldDistance(cameraParams, cameraRotation, cameraTranslation, result.data.chXY, [result.data.chXY(1) + result.data.chD, result.data.chXY(2)]);
+for l = 1 : result.data.sQ
+    result.data.sDW(l) = calculateWorldDistance(cameraParams, cameraRotation, cameraTranslation, result.data.sXY(l,:), [result.data.sXY(l,1) + result.data.sD(l), result.data.sXY(l,2)]);
 end
-worldSizeCalculationTime = toc;
-if (logMode >= 2)
-    disp("Camera calibration done within " + worldSizeCalculationTime + " s.");
+result.data.vDW = calculateWorldDistance(cameraParams, cameraRotation, cameraTranslation, result.data.vXY, [result.data.vXY(1) + result.data.vD, result.data.vXY(2)]);
+result.data.pcDW = calculateWorldDistance(cameraParams, cameraRotation, cameraTranslation, [0 0], [result.data.pcD, 0]);
+
+disp("Rim diameter: " + result.data.rDW + " mm")
+disp("Central hole diameter: " + result.data.chDW + " mm")
+disp("Screws diameters:")
+for i = 1 : result.data.sQ
+    disp("  " + result.data.sDW(i) + " mm")
 end
+disp("Pitch circle diameter: " + result.data.pcDW + " mm");
+disp("Ventil diameter: " + result.data.vDW + " mm")
 
 disp("===============================================================")
-disp("Comparing recognized rims with their parameters")
-labelsIndexes = unique(classifier.Y);
+disp("Recognizing rim model")
 
-fData = [result.tac];
-fData = [fData.data];
-ind = 1;
-for f = ["rD", "chD", "vD", "vAngle", "sQ", "sCD", "sCentr", "chCentr"]
-    fData1(:,ind) = [fData.(f)];
-    ind=ind+1;
-end
+disp("Recognizing rim model by hog features");
+[result.hogRec, result.hogTim] = recognizeRimByHOG(hogClassifier, img, 'rimXY', result.data.rXY, 'rimRadius', result.data.rD / 2);
+disp("Hog recognizion ended within " + result.hogTim + " s with result " + result.hogRec)
 
-[centers, partition] = fcm(fData1, length(labelsIndexes));
-partionMax = max(partition);
-
-for a = 1 : length(labelsIndexes)
-    el = [];
-    ind = 1;
-    for b = find(partition(a, :) == partionMax) - 1
-        i = floor(b / numel(testSet.Files)) + 1;
-        m = mod(b, numel(testSet.Files)) + 1;
-        j = 0;
-        while m > 0
-            k = m;
-            m = m - (2 * j + 1) ^2;
-            j = j + 1;
-        end
-        el(ind).i = i;
-        el(ind).j = j;
-        el(ind).k = k;
-        el(ind).rec = result(i).tac(j).rec(k);
-        ind = ind + 1;
-    end
-    
-    uniqueLabels = unique([el.rec]);
-    q = zeros(length(uniqueLabels), 1);
-    for i = 1:length(uniqueLabels)
-        q(i) = length(find(strcmp(uniqueLabels{i}, [el.rec])));
-    end
-    [~, ind] = max(q);
-    m = el(ind).rec;
-    
-    for i = 1 : length(el)
-        result(el(i).i).tac(el(i).j).correctRec(el(i).k) = m;
-%         if strcmp(el(i).rec, m)
-%             result(el(i).i).tac(el(i).j).wrongRec(el(i).k) = {''};
-%         else
-%             result(el(i).i).tac(el(i).j).wrongRec(el(i).k) = result(el(i).i).tac(el(i).j).rec(el(i).k);
-%             result(el(i).i).tac(el(i).j).rec(el(i).k) = m;
-%         end
-    end
-end
+disp("Recognizing rim model by params");
+[result.paramsRec, result.paramsTim] = recognizeRimByParams(paramsClassifier, result.data);
+disp("Params recognizion ended within " + result.paramsTim + " s with result " + result.paramsRec)

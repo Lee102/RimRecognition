@@ -40,7 +40,7 @@ function result = calculateRimsForMainView(calibrationSetPath, squareSize, hogTr
                     result(i).tac(j).data(k).sDW(l) = calculateWorldDistance(cameraParams, rotation, translation, result(i).tac(j).data(k).sXY(l,:), [result(i).tac(j).data(k).sXY(l,1) + result(i).tac(j).data(k).sD(l), result(i).tac(j).data(k).sXY(l,2)]);
                 end
                 result(i).tac(j).data(k).vDW = calculateWorldDistance(cameraParams, rotation, translation, result(i).tac(j).data(k).vXY, [result(i).tac(j).data(k).vXY(1) + result(i).tac(j).data(k).vD, result(i).tac(j).data(k).vXY(2)]);
-                result(i).tac(j).data(k).sCDW = calculateWorldDistance(cameraParams, rotation, translation, [0 0], [result(i).tac(j).data(k).sCD, 0]);
+                result(i).tac(j).data(k).pcDW = calculateWorldDistance(cameraParams, rotation, translation, [0 0], [result(i).tac(j).data(k).pcD, 0]);
             end
         end
     end
@@ -50,7 +50,7 @@ function result = calculateRimsForMainView(calibrationSetPath, squareSize, hogTr
     fData = [result.tac];
     fData = [fData.data];
     ind = 1;
-    for f = ["rD", "chD", "vD", "vAngle", "sQ", "sCD", "sCentr", "chCentr"]
+    for f = ["rD", "chD", "sQ", "pcD", "vD", "vA"]
         fData1(:,ind) = [fData.(f)];
         ind=ind+1;
     end
@@ -94,4 +94,5 @@ function result = calculateRimsForMainView(calibrationSetPath, squareSize, hogTr
             result(el(i).i).tac(el(i).j).correctRec(el(i).k) = m;
         end
     end
+    disp('a');
 end
