@@ -7,12 +7,12 @@ imagePath = "Rims/6.png";
 logMode = 2;
 maxNoTranslations = 0;
 % camera calibration
-calibrationSetPath = "Cal";
+calibrationSetPath = "CalibrationSet";
 squareSize = 25;
 % hog classifier
-hogTrainSetPath = "Hog";
+hogTrainSetPath = "ClassifierBuildSet";
 % params classifier
-paramsTrainSetPath = "Hog";
+paramsTrainSetPath = "ClassifierBuildSet";
 
 warning('off', 'images:imfindcircles:warnForLargeRadiusRange');
 warning('off', 'images:imfindcircles:warnForSmallRadius');
