@@ -3,7 +3,7 @@ clc
 addpath('Scripts')
 
 % start params
-imagePath = "Rims/6.png";
+imagePath = "Rims/0.png";
 logMode = 2;
 maxNoTranslations = 0;
 % camera calibration

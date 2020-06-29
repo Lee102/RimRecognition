@@ -32,7 +32,7 @@ function [label, tim] = recognizeRimByHOG(classifier, img, varargin)
     rimXY = parser.Results.rimXY;
     rimRadius = parser.Results.rimRadius;
     
-    features = getHOGFeatures(img, 'CellSize', cellSize, 'NumBins', numBins, 'rimXY', rimXY, 'rimRadius', rimRadius);
+    features = getHOGFeatures(img, varargin{:});
     
     label = cellstr(predict(classifier, features));
     tim = toc(t);

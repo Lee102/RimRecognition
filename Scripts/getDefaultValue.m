@@ -21,13 +21,6 @@ function value = getDefaultValue(key)
         case 'centralHoleMethod'
             value = 'phasecode';
             
-        case 'smallOuterHolesObjectPolarity'
-            value = 'bright';
-        case 'smallOuterHolesSensitivity'
-            value = 0.91;
-        case 'smallOuterHolesMethod'
-            value = 'phasecode';
-            
         case 'smallHolesObjectPolarity'
             value = 'dark';
         case 'smallHolesSensitivity'
@@ -38,14 +31,14 @@ function value = getDefaultValue(key)
         case 'screwHolesRadiusBounds'
             value = [8 17];
         case 'screwHolesScoreMaxDiff'
-            value = 0.15;
+            value = 0.2;
         case 'screwRadiusMaxDiff'
             value = 1;
         case 'screwAngleMaxDiff'
             value = 5;
             
         case 'ventilHoleRadiusBounds'
-            value = [6 10];
+            value = [4 10];
             
         case 'hogCellSize'
             value = [16 16];

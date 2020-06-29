@@ -19,6 +19,7 @@ function features = getHOGFeatures(img, varargin)
     checkSensitivity = @(x) isfloat(x) && x >= 0 && x <= 1;
     checkMethod = @(x) any(validatestring(x, {'phasecode', 'twostage'}));
     checkRimRadius = @(x) isnumeric(x) && x > 0;
+    checkSignedOrientation = @(x) x == 1 || x == 0;
     
     parser = inputParser();
     parser.KeepUnmatched = true;
@@ -31,6 +32,8 @@ function features = getHOGFeatures(img, varargin)
     addParameter(parser, 'rimMethod', getDefaultValue('rimMethod'), checkMethod);
     addParameter(parser, 'rimXY', [], checkMatrixParams);
     addParameter(parser, 'rimRadius', -1, checkRimRadius);
+    addParameter(parser, 'blockSize', [2 2], checkMatrixParams);
+    addParameter(parser, 'useSignedOrientation', false, checkSignedOrientation);
     parse(parser, img, varargin{:});
     cellSize = parser.Results.cellSize;
     numBins = parser.Results.numBins;
@@ -40,6 +43,8 @@ function features = getHOGFeatures(img, varargin)
     rimMethod = parser.Results.rimMethod;
     rimXY = parser.Results.rimXY;
     rimRadius = parser.Results.rimRadius;
+    blockSize = parser.Results.blockSize;
+    useSignedOrientation = parser.Results.useSignedOrientation;
     
     if ~isempty(rimXY) && rimRadius > 0
         xy = rimXY;
@@ -57,5 +62,5 @@ function features = getHOGFeatures(img, varargin)
     mask = createMask(roi, img);
     img(mask == 0) = 0;
     
-    features = extractHOGFeatures(img, 'CellSize', cellSize, 'NumBins', numBins);
+    features = extractHOGFeatures(img, 'CellSize', cellSize, 'NumBins', numBins, 'BlockSize', blockSize, 'UseSignedOrientation', useSignedOrientation);
 end
